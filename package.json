@@ -12,6 +12,7 @@
     "@chakra-ui/theme-tools": "1.0.4",
     "@emotion/react": "11.1.5",
     "@emotion/styled": "11.1.5",
+    "formik": "^2.2.6",
     "framer-motion": "^3.5.2",
     "next": "latest",
     "react": "^17.0.1",
