@@ -3,6 +3,7 @@ import { Flex } from '@chakra-ui/react';
 import React from 'react';
 import NextLink from 'next/link';
 import { useCurrentUserQuery } from '../generated/graphql';
+import { DarkModeSwitch } from './DarkModeSwitch';
 
 interface NavBarProps {}
 
@@ -32,8 +33,12 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
   }
 
   return (
-    <Flex backgroundColor='tomato' p={4}>
-      <Box marginLeft={'auto'}>{body}</Box>
+    <Flex backgroundColor='tomato' p={1}>
+      <Box marginLeft={'auto'} padding={'2'}>
+        <Box marginRight={4}>{body}</Box>
+
+        <DarkModeSwitch />
+      </Box>
     </Flex>
   );
 };
