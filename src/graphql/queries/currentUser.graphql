@@ -1,6 +1,5 @@
 query CurrentUser {
   currentUser {
-    _id
-    username
+    ...BaseUser
   }
 }

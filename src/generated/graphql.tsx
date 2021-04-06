@@ -96,6 +96,11 @@ export type UsernamePasswordInput = {
   password: Scalars['String'];
 };
 
+export type BaseUserFragment = (
+  { __typename?: 'User' }
+  & Pick<User, '_id' | 'username'>
+);
+
 export type LoginMutationVariables = Exact<{
   options: UsernamePasswordInput;
 }>;
@@ -110,7 +115,7 @@ export type LoginMutation = (
       & Pick<FieldError, 'field' | 'message'>
     )>>, user?: Maybe<(
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'username' | 'createdAt' | 'updatedAt'>
+      & BaseUserFragment
     )> }
   ) }
 );
@@ -130,7 +135,7 @@ export type RegisterMutation = (
       & Pick<FieldError, 'field' | 'message'>
     )>>, user?: Maybe<(
       { __typename?: 'User' }
-      & Pick<User, '_id' | 'username' | 'createdAt' | 'updatedAt'>
+      & BaseUserFragment
     )> }
   ) }
 );
@@ -142,11 +147,16 @@ export type CurrentUserQuery = (
   { __typename?: 'Query' }
   & { currentUser?: Maybe<(
     { __typename?: 'User' }
-    & Pick<User, '_id' | 'username'>
+    & BaseUserFragment
   )> }
 );
 
-
+export const BaseUserFragmentDoc = gql`
+    fragment BaseUser on User {
+  _id
+  username
+}
+    `;
 export const LoginDocument = gql`
     mutation Login($options: UsernamePasswordInput!) {
   login(options: $options) {
@@ -155,14 +165,11 @@ export const LoginDocument = gql`
       message
     }
     user {
-      _id
-      username
-      createdAt
-      updatedAt
+      ...BaseUser
     }
   }
 }
-    `;
+    ${BaseUserFragmentDoc}`;
 
 export function useLoginMutation() {
   return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
@@ -175,14 +182,11 @@ export const RegisterDocument = gql`
       message
     }
     user {
-      _id
-      username
-      createdAt
-      updatedAt
+      ...BaseUser
     }
   }
 }
-    `;
+    ${BaseUserFragmentDoc}`;
 
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
@@ -190,11 +194,10 @@ export function useRegisterMutation() {
 export const CurrentUserDocument = gql`
     query CurrentUser {
   currentUser {
-    _id
-    username
+    ...BaseUser
   }
 }
-    `;
+    ${BaseUserFragmentDoc}`;
 
 export function useCurrentUserQuery(options: Omit<Urql.UseQueryArgs<CurrentUserQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<CurrentUserQuery>({ query: CurrentUserDocument, ...options });

@@ -1,5 +1,5 @@
 import { Box, Link } from '@chakra-ui/layout';
-import { Flex } from '@chakra-ui/react';
+import { Button, Flex } from '@chakra-ui/react';
 import React from 'react';
 import NextLink from 'next/link';
 import { useCurrentUserQuery } from '../generated/graphql';
@@ -12,6 +12,8 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
   let body = null;
   // 3 possible states, loading
   if (fetching) {
+      console.log('Fetching Data...');
+      
     // user not logged in
   } else if (!data?.currentUser) {
     body = (
@@ -22,18 +24,20 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
         <NextLink href='/register'>
           <Link marginRight={4}>Register</Link>
         </NextLink>
-        <NextLink href='/'>
-          <Link marginRight={4}>Home</Link>
-        </NextLink>
       </>
     );
     // user logged in
   } else {
-    body = data.currentUser.username;
+    body = (
+      <Flex>
+        <Box marginRight={2}>{data.currentUser.username}</Box>
+        <Button variant='link'>logout</Button>
+      </Flex>
+    );
   }
 
   return (
-    <Flex backgroundColor='tomato' p={1}>
+    <Flex backgroundColor='lightcoral' p={1}>
       <Box marginLeft={'auto'} padding={'2'}>
         <Box marginRight={4}>{body}</Box>
 
