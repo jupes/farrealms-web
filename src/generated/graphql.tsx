@@ -25,6 +25,7 @@ export type Mutation = {
   createPost: Post;
   updatePost?: Maybe<Post>;
   deletePost: Scalars['Boolean'];
+  resetPassword: UserResponse;
   forgotPassword: Scalars['Boolean'];
   register: UserResponse;
   login: UserResponse;
@@ -45,6 +46,12 @@ export type MutationUpdatePostArgs = {
 
 export type MutationDeletePostArgs = {
   _id: Scalars['Int'];
+};
+
+
+export type MutationResetPasswordArgs = {
+  newPassword: Scalars['String'];
+  token: Scalars['String'];
 };
 
 
@@ -106,9 +113,35 @@ export type UsernamePasswordInput = {
   password: Scalars['String'];
 };
 
+export type BaseFieldErrorFragment = (
+  { __typename?: 'FieldError' }
+  & Pick<FieldError, 'field' | 'message'>
+);
+
 export type BaseUserFragment = (
   { __typename?: 'User' }
-  & Pick<User, '_id' | 'username'>
+  & Pick<User, '_id' | 'username' | 'email'>
+);
+
+export type BaseUserResponseFragment = (
+  { __typename?: 'UserResponse' }
+  & { errors?: Maybe<Array<(
+    { __typename?: 'FieldError' }
+    & BaseFieldErrorFragment
+  )>>, user?: Maybe<(
+    { __typename?: 'User' }
+    & BaseUserFragment
+  )> }
+);
+
+export type ForgotPasswordMutationVariables = Exact<{
+  email: Scalars['String'];
+}>;
+
+
+export type ForgotPasswordMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'forgotPassword'>
 );
 
 export type LoginMutationVariables = Exact<{
@@ -121,13 +154,7 @@ export type LoginMutation = (
   { __typename?: 'Mutation' }
   & { login: (
     { __typename?: 'UserResponse' }
-    & { errors?: Maybe<Array<(
-      { __typename?: 'FieldError' }
-      & Pick<FieldError, 'field' | 'message'>
-    )>>, user?: Maybe<(
-      { __typename?: 'User' }
-      & BaseUserFragment
-    )> }
+    & BaseUserResponseFragment
   ) }
 );
 
@@ -148,13 +175,21 @@ export type RegisterMutation = (
   { __typename?: 'Mutation' }
   & { register: (
     { __typename?: 'UserResponse' }
-    & { errors?: Maybe<Array<(
-      { __typename?: 'FieldError' }
-      & Pick<FieldError, 'field' | 'message'>
-    )>>, user?: Maybe<(
-      { __typename?: 'User' }
-      & BaseUserFragment
-    )> }
+    & BaseUserResponseFragment
+  ) }
+);
+
+export type ResetPasswordMutationVariables = Exact<{
+  token: Scalars['String'];
+  newPassword: Scalars['String'];
+}>;
+
+
+export type ResetPasswordMutation = (
+  { __typename?: 'Mutation' }
+  & { resetPassword: (
+    { __typename?: 'UserResponse' }
+    & BaseUserResponseFragment
   ) }
 );
 
@@ -180,25 +215,46 @@ export type PostsQuery = (
   )> }
 );
 
+export const BaseFieldErrorFragmentDoc = gql`
+    fragment BaseFieldError on FieldError {
+  field
+  message
+}
+    `;
 export const BaseUserFragmentDoc = gql`
     fragment BaseUser on User {
   _id
   username
+  email
 }
     `;
+export const BaseUserResponseFragmentDoc = gql`
+    fragment BaseUserResponse on UserResponse {
+  errors {
+    ...BaseFieldError
+  }
+  user {
+    ...BaseUser
+  }
+}
+    ${BaseFieldErrorFragmentDoc}
+${BaseUserFragmentDoc}`;
+export const ForgotPasswordDocument = gql`
+    mutation ForgotPassword($email: String!) {
+  forgotPassword(email: $email)
+}
+    `;
+
+export function useForgotPasswordMutation() {
+  return Urql.useMutation<ForgotPasswordMutation, ForgotPasswordMutationVariables>(ForgotPasswordDocument);
+};
 export const LoginDocument = gql`
     mutation Login($usernameOrEmail: String!, $password: String!) {
   login(usernameOrEmail: $usernameOrEmail, password: $password) {
-    errors {
-      field
-      message
-    }
-    user {
-      ...BaseUser
-    }
+    ...BaseUserResponse
   }
 }
-    ${BaseUserFragmentDoc}`;
+    ${BaseUserResponseFragmentDoc}`;
 
 export function useLoginMutation() {
   return Urql.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument);
@@ -215,19 +271,24 @@ export function useLogoutMutation() {
 export const RegisterDocument = gql`
     mutation Register($options: UsernamePasswordInput!) {
   register(options: $options) {
-    errors {
-      field
-      message
-    }
-    user {
-      ...BaseUser
-    }
+    ...BaseUserResponse
   }
 }
-    ${BaseUserFragmentDoc}`;
+    ${BaseUserResponseFragmentDoc}`;
 
 export function useRegisterMutation() {
   return Urql.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument);
+};
+export const ResetPasswordDocument = gql`
+    mutation ResetPassword($token: String!, $newPassword: String!) {
+  resetPassword(token: $token, newPassword: $newPassword) {
+    ...BaseUserResponse
+  }
+}
+    ${BaseUserResponseFragmentDoc}`;
+
+export function useResetPasswordMutation() {
+  return Urql.useMutation<ResetPasswordMutation, ResetPasswordMutationVariables>(ResetPasswordDocument);
 };
 export const CurrentUserDocument = gql`
     query CurrentUser {
