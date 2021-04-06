@@ -18,10 +18,10 @@ const Login: React.FC<{}> = ({}) => {
   return (
     <Wrapper variant='small'>
       <Formik
-        initialValues={{ username: '', password: '' }}
+        initialValues={{ usernameOrEmail: '', password: '' }}
         onSubmit={async (values, { setErrors }) => {
           // because my keys in both the parameters and the register mutation are the same I do not need to change here
-          const response = await login({ options: values });
+          const response = await login(values);
           console.log('RESPONSE DATA ');
           console.log(response);
           if (response.data?.login.errors) {
@@ -36,9 +36,9 @@ const Login: React.FC<{}> = ({}) => {
         {({ isSubmitting }) => (
           <Form>
             <InputField
-              name='username'
-              placeholder='Please enter a username'
-              label='Username'
+              name='usernameOrEmail'
+              placeholder='Please enter Username or Email'
+              label='Username or Email '
             />
             <Box marginTop={8}>
               <InputField
