@@ -7,6 +7,7 @@ import {
   CurrentUserDocument,
   CurrentUserQuery,
   LoginMutation,
+  LogoutMutation,
   RegisterMutation,
 } from '../generated/graphql';
 
@@ -33,6 +34,16 @@ const client = createClient({
       updates: {
         // This code update sthe cache
         Mutation: {
+          logout: (_result, args, cache, info) => {
+            betterUpdateQuery<LogoutMutation, CurrentUserQuery>(
+              cache,
+              { query: CurrentUserDocument },
+              _result,
+              () => ({
+                currentUser: null,
+              })
+            );
+          },
           login: (_result, args, cache, info) => {
             betterUpdateQuery<LoginMutation, CurrentUserQuery>(
               cache,
