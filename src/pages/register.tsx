@@ -1,10 +1,12 @@
 import { Box, Button } from '@chakra-ui/react';
 import { Form, Formik } from 'formik';
+import { withUrqlClient } from 'next-urql';
 import { useRouter } from 'next/dist/client/router';
 import React from 'react';
 import { InputField } from '../components/InputField';
 import { Wrapper } from '../components/Wrapper';
 import { useRegisterMutation } from '../generated/graphql';
+import { createURQLClient } from '../utils/createURQLClient';
 import { toErrorMap } from '../utils/toErrorMap';
 
 interface registerProps {}
@@ -16,10 +18,10 @@ const Register: React.FC<registerProps> = ({}) => {
   return (
     <Wrapper variant='small'>
       <Formik
-        initialValues={{ username: '', password: '' }}
+        initialValues={{ email: '', username: '', password: '' }}
         onSubmit={async (values, { setErrors }) => {
           // because my keys in both the parameters and the register mutation are the same I do not need to change here
-          const response = await register(values);
+          const response = await register({ options: values });
           console.log('RESPONSE DATA ');
           console.log(response);
           if (response.data?.register.errors) {
@@ -36,6 +38,14 @@ const Register: React.FC<registerProps> = ({}) => {
               placeholder='Please enter a username'
               label='Username'
             />
+            <Box marginTop={8}>
+              <InputField
+                name='email'
+                placeholder='sample@Example.test'
+                label='Email'
+                type='email'
+              />
+            </Box>
             <Box marginTop={8}>
               <InputField
                 name='password'
@@ -58,4 +68,4 @@ const Register: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default Register;
+export default withUrqlClient(createURQLClient, { ssr: false })(Register);
