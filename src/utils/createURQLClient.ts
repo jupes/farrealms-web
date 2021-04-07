@@ -1,7 +1,24 @@
 import { cacheExchange } from "@urql/exchange-graphcache";
-import { dedupExchange, fetchExchange } from "urql";
-import { LogoutMutation, CurrentUserQuery, CurrentUserDocument, LoginMutation, RegisterMutation } from "../generated/graphql";
+import { dedupExchange, Exchange, fetchExchange } from "urql";
+import { pipe, tap } from 'wonka';
+import { CurrentUserDocument, CurrentUserQuery, LoginMutation, LogoutMutation, RegisterMutation } from "../generated/graphql";
 import { betterUpdateQuery } from "./betterUpdateQuery";
+import Router from 'next/router';
+
+const errorExchange: Exchange = ({ forward }) => ops$ => {
+  return pipe(
+    forward(ops$),
+    tap(({ error }) => {
+      // If the OperationResult has an error send a request to sentry
+      if (error) {
+        if(error?.message.includes('not authenticated')) {
+          // replaces current route in the history, usually what you want to do when you redirect
+          Router.replace('/login');
+        }
+      }
+    })
+  );
+};
 
 export const createURQLClient = (ssrExchange: any) => ({
   url: 'http://localhost:4000/graphql',
@@ -59,6 +76,7 @@ export const createURQLClient = (ssrExchange: any) => ({
         },
       },
     }),
+    errorExchange,
     ssrExchange,
     fetchExchange,
   ],
