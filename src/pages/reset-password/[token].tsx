@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Link } from '@chakra-ui/react';
 import { Formik, Form } from 'formik';
 import { NextPage } from 'next';
-import { withUrqlClient, WithUrqlProps } from 'next-urql';
+import { withUrqlClient } from 'next-urql';
 import { useRouter } from 'next/dist/client/router';
 import React, { useState } from 'react';
 import { InputField } from '../../components/InputField';
@@ -11,9 +11,7 @@ import { createURQLClient } from '../../utils/createURQLClient';
 import { toErrorMap } from '../../utils/toErrorMap';
 import NextLink from 'next/link';
 
-const ResetPassword: NextPage<WithUrqlProps, { token: string }> = ({
-  token,
-}) => {
+const ResetPassword: NextPage = () => {
   const router = useRouter();
   const [, changePassword] = useResetPasswordMutation();
   const [tokenError, setTokenError] = useState('');
@@ -24,7 +22,8 @@ const ResetPassword: NextPage<WithUrqlProps, { token: string }> = ({
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
             newPassword: values.newPassword,
-            token,
+            token:
+              typeof router.query.token === 'string' ? router.query.token : '',
           });
           console.log('RESPONSE DATA ');
           console.log(response);
@@ -53,7 +52,9 @@ const ResetPassword: NextPage<WithUrqlProps, { token: string }> = ({
             />
             {tokenError ? (
               <Flex>
-                <Box color='red' marginRight={4}>{tokenError}</Box>
+                <Box color='red' marginRight={4}>
+                  {tokenError}
+                </Box>
                 <NextLink href='/forgot-password'>
                   <Link marginRight={4}>Click to get a new token</Link>
                 </NextLink>
@@ -71,12 +72,6 @@ const ResetPassword: NextPage<WithUrqlProps, { token: string }> = ({
       </Formik>
     </Wrapper>
   );
-};
-
-ResetPassword.getInitialProps = ({ query }) => {
-  return {
-    token: query.token as string,
-  };
 };
 
 export default withUrqlClient(createURQLClient, { ssr: false })(ResetPassword);
