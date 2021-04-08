@@ -3,18 +3,63 @@ import { createURQLClient } from '../utils/createURQLClient';
 import { usePostsQuery } from '../generated/graphql';
 import { Layout } from '../components/Layout';
 import NextLink from 'next/link';
-import React from 'react';
-import { Link } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Flex,
+  Heading,
+  Link,
+  Spinner,
+  Stack,
+  Text,
+  useColorMode,
+} from '@chakra-ui/react';
 
 const Index = () => {
-  const [{ data }] = usePostsQuery();
+  const [variables, setVariables] = useState({ limit: 10, cursor: null as null | string});
+  const [{ data, fetching }] = usePostsQuery({
+    variables,
+  });
+  // TODO: use this chakra hook elsewhere to make things look cool
+  const { colorMode } = useColorMode();
   return (
     <Layout>
       <NextLink href='/create-post'>
-        <Link color='bisque'>Create A Post</Link>
+        <Link color={colorMode === 'dark' ? 'bisque' : 'royalblue'}>
+          Create A Post
+        </Link>
       </NextLink>
       <br />
-      {!data ? null : data.posts.map((p) => <div key={p._id}>{p.title}</div>)}
+      {fetching && !data ? (
+        <Spinner color='red.500' />
+      ) : (
+        <Stack spacing={8}>
+          {data!.posts.map((p) => (
+            <Box key={p._id} p={5} shadow='md' borderWidth='1px'>
+              <Heading fontSize='xl'>{p.title}</Heading>
+              <Text marginTop={4}>{p.textSnippet}</Text>
+            </Box>
+          ))}
+        </Stack>
+      )}
+
+      {data ? (
+        <Flex>
+          <Button
+            onClick={() =>
+              setVariables({
+                limit: variables.limit,
+                cursor: data.posts[data.posts.length - 1].createdAt,
+              })
+            }
+            isLoading={false}
+            margin='auto'
+            marginY={2}>
+            Load More Posts
+          </Button>
+        </Flex>
+      ) : null}
     </Layout>
   );
 };
