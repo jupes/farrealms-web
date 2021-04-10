@@ -1,0 +1,9 @@
+mutation CreateProject($options: ProjectInput!){
+  createProject(options: $options) {
+     _id
+    title
+    description
+    currentBid
+    createdAt
+  }
+}

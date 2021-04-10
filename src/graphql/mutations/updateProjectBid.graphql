@@ -1,0 +1,10 @@
+mutation UpdateProjectBid($newBid: Int!, $_id: Int!) {
+  updateProjectBid(_id: $_id, newBid: $newBid) {
+    _id
+    title
+    description
+    currentBid
+    createdAt
+    authorId
+  }
+}

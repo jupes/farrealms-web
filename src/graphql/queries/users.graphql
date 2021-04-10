@@ -1,0 +1,7 @@
+query Users {
+  users {
+    _id
+    createdAt
+    updatedAt
+  }
+}
