@@ -1,5 +1,10 @@
 import { cacheExchange, Resolver } from '@urql/exchange-graphcache';
-import { dedupExchange, Exchange, fetchExchange, stringifyVariables } from 'urql';
+import {
+  dedupExchange,
+  Exchange,
+  fetchExchange,
+  stringifyVariables,
+} from 'urql';
 import { pipe, tap } from 'wonka';
 import {
   CurrentUserDocument,
@@ -38,14 +43,28 @@ export const cursorPagination = (): Resolver => {
     }
 
     const fieldKey = `${fieldName}(${stringifyVariables(fieldArgs)})`;
-    const isInCache = cache.resolve(entityKey, fieldKey);
-    info.partial = !isInCache;
+    const isItInTheCache = cache.resolve(
+      cache.resolveFieldByKey(entityKey, fieldKey) as string,
+      "posts"
+    );
+    info.partial = !isItInTheCache;
     const results: string[] = [];
+    let hasMorePostsIndicator = true;
     fieldInfos.forEach((singleFieldInfo) => {
-      const data = cache.resolve(entityKey, singleFieldInfo.fieldKey) as string[]
-      results.push(...data)
-    })
-    return results;
+      const key = cache.resolveFieldByKey(entityKey, singleFieldInfo.fieldKey) as string;
+      const data = cache.resolve(key, "posts") as string[];
+      const _hasMorePostsIndicator = cache.resolve(key, 'hasMorePosts');
+      if (!_hasMorePostsIndicator) {
+        hasMorePostsIndicator = _hasMorePostsIndicator as boolean;
+      }
+      results.push(...data);
+    });
+    console.log(results);
+    return {
+      __typename: 'CursorPagination',
+      hasMorePosts: hasMorePostsIndicator,
+      posts: results,
+    };
   };
 };
 
@@ -57,6 +76,9 @@ export const createURQLClient = (ssrExchange: any) => ({
   exchanges: [
     dedupExchange,
     cacheExchange({
+      keys: {
+        CursorPagination: () => null,
+      },
       resolvers: {
         Query: {
           posts: cursorPagination(),

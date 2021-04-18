@@ -48,7 +48,7 @@ export const NavBar: React.FC<NavBarProps> = ({}) => {
   }
 
   return (
-    <Flex backgroundColor='lightcoral' position='sticky' top={0} zIndex={1} p={1}>
+    <Flex backgroundColor='teal' position='sticky' top={0} zIndex={1} p={1}>
       <Box marginLeft={'auto'} padding={'2'}>
         <Box marginRight={4}>{body}</Box>
         <DarkModeSwitch />

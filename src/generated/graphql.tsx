@@ -14,6 +14,12 @@ export type Scalars = {
   Float: number;
 };
 
+export type CursorPagination = {
+  __typename?: 'CursorPagination';
+  posts: Array<Post>;
+  hasMorePosts: Scalars['Boolean'];
+};
+
 export type FieldError = {
   __typename?: 'FieldError';
   field: Scalars['String'];
@@ -90,7 +96,7 @@ export type PostInput = {
 export type Query = {
   __typename?: 'Query';
   hello: Scalars['String'];
-  posts: Array<Post>;
+  posts: CursorPagination;
   post?: Maybe<Post>;
   currentUser?: Maybe<User>;
   users: Array<User>;
@@ -240,10 +246,14 @@ export type PostsQueryVariables = Exact<{
 
 export type PostsQuery = (
   { __typename?: 'Query' }
-  & { posts: Array<(
-    { __typename?: 'Post' }
-    & Pick<Post, '_id' | 'title' | 'textSnippet' | 'createdAt' | 'updatedAt'>
-  )> }
+  & { posts: (
+    { __typename?: 'CursorPagination' }
+    & Pick<CursorPagination, 'hasMorePosts'>
+    & { posts: Array<(
+      { __typename?: 'Post' }
+      & Pick<Post, '_id' | 'title' | 'text' | 'textSnippet' | 'score' | 'authorId' | 'createdAt' | 'updatedAt'>
+    )> }
+  ) }
 );
 
 export const BaseFieldErrorFragmentDoc = gql`
@@ -352,11 +362,17 @@ export function useCurrentUserQuery(options: Omit<Urql.UseQueryArgs<CurrentUserQ
 export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
   posts(limit: $limit, cursor: $cursor) {
-    _id
-    title
-    textSnippet
-    createdAt
-    updatedAt
+    hasMorePosts
+    posts {
+      _id
+      title
+      text
+      textSnippet
+      score
+      authorId
+      createdAt
+      updatedAt
+    }
   }
 }
     `;
