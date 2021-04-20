@@ -14,6 +14,12 @@ export type Scalars = {
   Float: number;
 };
 
+export type CursorPagination = {
+  __typename?: 'CursorPagination';
+  posts: Array<Post>;
+  hasMorePosts: Scalars['Boolean'];
+};
+
 export type FieldError = {
   __typename?: 'FieldError';
   field: Scalars['String'];
@@ -79,6 +85,7 @@ export type Post = {
   authorId: Scalars['Float'];
   createdAt: Scalars['String'];
   updatedAt: Scalars['String'];
+  textSnippet: Scalars['String'];
 };
 
 export type PostInput = {
@@ -89,10 +96,16 @@ export type PostInput = {
 export type Query = {
   __typename?: 'Query';
   hello: Scalars['String'];
-  posts: Array<Post>;
+  posts: CursorPagination;
   post?: Maybe<Post>;
   currentUser?: Maybe<User>;
   users: Array<User>;
+};
+
+
+export type QueryPostsArgs = {
+  cursor?: Maybe<Scalars['String']>;
+  limit: Scalars['Int'];
 };
 
 
@@ -225,15 +238,22 @@ export type CurrentUserQuery = (
   )> }
 );
 
-export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PostsQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  cursor?: Maybe<Scalars['String']>;
+}>;
 
 
 export type PostsQuery = (
   { __typename?: 'Query' }
-  & { posts: Array<(
-    { __typename?: 'Post' }
-    & Pick<Post, '_id' | 'createdAt' | 'updatedAt' | 'title'>
-  )> }
+  & { posts: (
+    { __typename?: 'CursorPagination' }
+    & Pick<CursorPagination, 'hasMorePosts'>
+    & { posts: Array<(
+      { __typename?: 'Post' }
+      & Pick<Post, '_id' | 'title' | 'text' | 'textSnippet' | 'score' | 'authorId' | 'createdAt' | 'updatedAt'>
+    )> }
+  ) }
 );
 
 export const BaseFieldErrorFragmentDoc = gql`
@@ -340,12 +360,19 @@ export function useCurrentUserQuery(options: Omit<Urql.UseQueryArgs<CurrentUserQ
   return Urql.useQuery<CurrentUserQuery>({ query: CurrentUserDocument, ...options });
 };
 export const PostsDocument = gql`
-    query Posts {
-  posts {
-    _id
-    createdAt
-    updatedAt
-    title
+    query Posts($limit: Int!, $cursor: String) {
+  posts(limit: $limit, cursor: $cursor) {
+    hasMorePosts
+    posts {
+      _id
+      title
+      text
+      textSnippet
+      score
+      authorId
+      createdAt
+      updatedAt
+    }
   }
 }
     `;
